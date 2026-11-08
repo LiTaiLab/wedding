@@ -817,6 +817,28 @@
       border: 1px solid rgba(255, 255, 255, 0.35);
     }
 
+    .album-modal-arrow {
+        position: absolute; top: 50%; transform: translateY(-50%); z-index: 2147483648;
+        width: 42px; height: 58px; border: 1px solid rgba(231,205,157,.38);
+        border-radius: 24px; color: #f7e8c8; background: rgba(255,255,255,.10);
+        font-family: Georgia,serif; font-size: 38px; line-height: 1; cursor: pointer;
+        display: none; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+    #pureImageModal.album-gallery-open .album-modal-arrow { display: flex; }
+    .album-modal-prev { left: max(14px, env(safe-area-inset-left)); }
+    .album-modal-next { right: max(14px, env(safe-area-inset-right)); }
+    .album-modal-counter {
+        position: absolute; z-index: 2147483648; left: 50%;
+        bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+        color: rgba(255,245,225,.88); font: 11px/1.2 'Cinzel',serif;
+        letter-spacing: 2px; display: none; pointer-events: none;
+    }
+    #pureImageModal.album-gallery-open .album-modal-counter { display: block; }
+    @media (max-width: 600px) {
+        .album-modal-arrow { width: 34px; height: 48px; font-size: 32px; }
+        .album-modal-prev { left: 8px; } .album-modal-next { right: 8px; }
+    }
     .modal-viewport {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
@@ -1702,6 +1724,121 @@
     .back-cover-divider .heart { font-size: 7px; color: var(--gold-main); padding: 0 4px; }
     .back-cover-tagline { font-family: 'Montserrat', sans-serif; font-size: 7.5px; letter-spacing: 2.5px; color: var(--text-muted); text-transform: uppercase; line-height: 1.5; }
 
+
+    /* ========================================================
+       相簿最後背面：Our Story 情書式收尾
+       延續原本奶油白紙張與香檳金邊框，不新增翻頁頁數
+       ======================================================== */
+    .album-ending-pane {
+      padding: 9px 20px 9px 8px;
+      background:
+        radial-gradient(ellipse at 50% 38%, rgba(255,255,255,.98) 0%, rgba(250,246,237,.92) 68%, rgba(242,235,222,.95) 100%);
+    }
+    .album-ending-frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 13px 9px 10px;
+      border: 1px solid rgba(181,139,73,.68);
+      outline: 1px solid rgba(181,139,73,.24);
+      outline-offset: -5px;
+      border-radius: 3px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      overflow: hidden;
+      background: linear-gradient(155deg, rgba(255,255,255,.45), rgba(250,246,237,.3));
+    }
+    .album-ending-kicker {
+      font-family: 'Cinzel', serif;
+      font-size: 5.5px;
+      letter-spacing: 2.2px;
+      color: #9a7848;
+      margin-top: 1px;
+    }
+    .album-ending-title {
+      margin-top: 5px;
+      font-family: 'Alex Brush', 'Pinyon Script', cursive;
+      font-size: 31px;
+      line-height: 1.05;
+      color: #a47b3e;
+      text-shadow: 0 1px 0 rgba(255,255,255,.9);
+    }
+    .album-ending-divider {
+      width: 78px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 6px 0 9px;
+      color: #b58b49;
+    }
+    .album-ending-divider span { height: 1px; flex: 1; background: linear-gradient(90deg, transparent, rgba(181,139,73,.75)); }
+    .album-ending-divider span:last-child { transform: scaleX(-1); }
+    .album-ending-divider b { font-size: 10px; font-weight: 400; line-height: 1; }
+    .album-ending-poem {
+      color: #69543a;
+      font-family: 'Noto Serif TC', serif;
+      font-size: 8.6px;
+      font-weight: 400;
+      letter-spacing: 1.1px;
+      line-height: 1.95;
+    }
+    .album-ending-message {
+      margin-top: 10px;
+      color: #78634a;
+      font-family: 'Noto Serif TC', serif;
+      font-size: 7.4px;
+      letter-spacing: .55px;
+      line-height: 1.9;
+    }
+    .album-ending-message p + p { margin-top: 5px; }
+    .album-ending-rings {
+      width: 48px;
+      height: 24px;
+      margin-top: 7px;
+      opacity: .9;
+    }
+    .album-ending-rings svg { display: block; width: 100%; height: 100%; }
+    .album-ending-footer {
+      margin-top: 5px;
+      font-family: 'Alex Brush', 'Pinyon Script', cursive;
+      font-size: 18px;
+      line-height: 1.05;
+      color: #a47b3e;
+      white-space: nowrap;
+    }
+    .album-ending-sub {
+      margin-top: 4px;
+      font-family: 'Cinzel', serif;
+      font-size: 4.6px;
+      letter-spacing: 1.25px;
+      color: rgba(137,105,58,.72);
+    }
+    .album-ending-leaf {
+      position: absolute;
+      color: rgba(177,137,75,.42);
+      font-family: serif;
+      pointer-events: none;
+      line-height: 1;
+    }
+    .album-ending-leaf-top { top: 10px; left: 7px; font-size: 25px; transform: rotate(-28deg); }
+    .album-ending-leaf-bottom { bottom: 7px; right: 7px; font-size: 27px; transform: rotate(150deg); }
+    @media (max-width: 480px) {
+      .album-ending-frame { padding: 10px 7px 8px; }
+      .album-ending-title { font-size: 27px; }
+      .album-ending-divider { margin: 5px 0 7px; }
+      .album-ending-poem { font-size: 7.7px; letter-spacing: .7px; }
+      .album-ending-message { margin-top: 7px; font-size: 6.6px; letter-spacing: .2px; }
+      .album-ending-message p + p { margin-top: 4px; }
+      .album-ending-rings { margin-top: 5px; width: 42px; height: 21px; }
+      .album-ending-footer { font-size: 16px; }
+      .album-ending-sub { font-size: 4px; letter-spacing: .9px; }
+      .album-ending-leaf-top { font-size: 20px; }
+      .album-ending-leaf-bottom { font-size: 22px; }
+    }
+
     /* ========================================================
        SECRET 隱藏章節：真正成為相簿中的一頁
        - 不使用獨立 Modal
@@ -2108,16 +2245,71 @@
       background: linear-gradient(90deg, transparent, rgba(164,132,75,0.18), transparent);
     }
 
-    .page-layout { width: 100%; height: 100%; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-    .photo-box {
-      width: 100%; height: 78%; border-radius: 3px; background-size: cover; background-position: center; border: 1px solid rgba(194, 159, 93, 0.3);
-      box-shadow: inset 0 0 6px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.03);
+    .page-layout {
+        width: 100%; height: 100%; padding: 9px 9px 15px;
+        display: flex; flex-direction: column; justify-content: flex-start;
+        gap: 5px; position: relative;
     }
-    .caption-box { text-align: center; padding-top: 3px; }
-    .caption-title { font-family: 'Cinzel', serif; font-size: 10.5px; letter-spacing: 1.5px; color: var(--gold-dark); }
-    .caption-text { font-size: 9.5px; color: var(--text-muted); line-height: 1.35; margin-top: 1px; }
-    .pg-num { font-family: 'Cinzel', serif; font-size: 8.5px; color: var(--gold-dark); position: absolute; bottom: 3px; right: 6px; }
-    .f-back .pg-num { right: auto; left: 6px; }
+    /* 相簿放大提示：改為無底色的香檳金細線圖示，避免手機畫面出現厚重圓鈕 */
+    .album-zoom-btn {
+        position: absolute; top: 4px; right: 4px;
+        width: 22px; height: 22px; padding: 0;
+        display: flex; align-items: center; justify-content: center;
+        border: 0; border-radius: 0;
+        color: rgba(224, 195, 143, .92);
+        background: transparent; box-shadow: none;
+        cursor: pointer; z-index: 3; opacity: .78;
+        transition: opacity .22s ease, transform .22s ease, color .22s ease;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .album-zoom-btn svg {
+        width: 19px; height: 19px; fill: none;
+        stroke: currentColor; stroke-width: 1.4;
+        stroke-linecap: round; stroke-linejoin: round;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,.38));
+    }
+    @media (hover: hover) and (pointer: fine) {
+        .album-zoom-btn { opacity: 0; transform: scale(.92); }
+        .photo-box:hover .album-zoom-btn,
+        .photo-box:focus-within .album-zoom-btn { opacity: .9; transform: scale(1); }
+    }
+    .album-zoom-btn:hover { color: #fff0cf; }
+    .photo-box {
+        position: relative; width: 100%; height: auto; flex: 1 1 auto; min-height: 0;
+        border-radius: 3px; background-size: cover; background-position: center;
+        border: 1px solid rgba(194, 159, 93, 0.3);
+        box-shadow: inset 0 0 6px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .caption-footer {
+        position: relative; flex: 0 0 auto; width: 100%; min-height: 13px;
+        display: flex; align-items: center; justify-content: flex-end;
+        padding: 0 1px;
+    }
+    /* 文案以照片正中央為基準置中，頁碼獨立固定在最右側 */
+    .caption-box {
+        position: absolute; left: 14px; right: 14px;
+        min-width: 0; text-align: center; padding: 0;
+    }
+    .caption-line {
+        display: flex; align-items: baseline; justify-content: center;
+        gap: 4px; width: 100%; white-space: nowrap; line-height: 1.2;
+        overflow: hidden;
+    }
+    .caption-title {
+        flex: 0 0 auto; font-family: 'Noto Serif TC', serif;
+        font-size: 10px; font-weight: 600; letter-spacing: 1px;
+        color: var(--gold-dark);
+    }
+    .caption-separator { flex: 0 0 auto; color: var(--gold-main); font-size: 8px; }
+    .caption-text {
+        flex: 0 1 auto; min-width: 0; font-size: 9px;
+        color: var(--text-muted); letter-spacing: 0; line-height: 1.2;
+    }
+    .pg-num {
+        flex: 0 0 13px; position: static; text-align: right;
+        font-family: 'Cinzel', serif; font-size: 8.5px; color: var(--gold-dark);
+        line-height: 1;
+    }
 
     /* 區塊樣式 */
     .section-header { display: flex; flex-direction: column; align-items: center; margin: 36px 0 16px; }
@@ -2264,6 +2456,19 @@
       position: relative; width: 100%; height: 220px; margin: 14px 0 8px; border-radius: 10px; overflow: hidden;
       border: 1px solid var(--gold-border); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06); background: #efeade;
     }
+    /* 手機可左右滑動地點圖片；保留垂直頁面捲動 */
+    .location-slider-container {
+      touch-action: pan-y;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .location-slides-track,
+    .loc-slide-item,
+    .loc-slide-img {
+      -webkit-user-drag: none;
+      user-select: none;
+    }
     .location-slides-track { display: flex; width: 200%; height: 100%; transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1); }
     .loc-slide-item { position: relative; width: 50%; height: 100%; cursor: zoom-in; }
     .loc-slide-img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -2306,7 +2511,15 @@
         margin: 10px auto 24px;
         padding: 8px 0 10px;
       }
-      .photo-box { height: 76%; }
+      /* 手機相簿：照片加大；章節描述與頁碼整合為同一列 */
+      .page-layout { padding: 5px 6px 7px; gap: 3px; }
+      .caption-footer { min-height: 12px; }
+      .caption-box { left: 12px; right: 12px; }
+      .caption-line { justify-content: center; gap: 2px; }
+      .caption-title { font-size: 8.2px; letter-spacing: .2px; }
+      .caption-separator { font-size: 6.8px; }
+      .caption-text { font-size: 6.9px; letter-spacing: 0; }
+      .pg-num { flex-basis: 11px; font-size: 8px; }
       .invitation-card { padding: 34px 14px 38px; }
       .refined-card { padding: 20px 10px; }
       .names-heading { font-size: 22px; gap: 16px; margin-bottom: 20px; }
@@ -3493,6 +3706,24 @@
 }
 </style>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </head>
 <body>
 
@@ -3631,6 +3862,9 @@
   <!-- 全螢幕圖片放大檢視彈窗 -->
   <div id="pureImageModal">
     <div class="modal-close-icon" onclick="closePureImage()">✕</div>
+    <button type="button" class="album-modal-arrow album-modal-prev" id="albumModalPrev" aria-label="上一張照片" onclick="changeAlbumImage(-1)">‹</button>
+    <button type="button" class="album-modal-arrow album-modal-next" id="albumModalNext" aria-label="下一張照片" onclick="changeAlbumImage(1)">›</button>
+    <div class="album-modal-counter" id="albumModalCounter" aria-live="polite"></div>
     <div class="modal-viewport" id="modalViewport">
       <img id="modalTargetImg" src="" alt="放大圖片">
     </div>
@@ -3820,22 +4054,22 @@
           <div class="cinema-page-face front cinema-cover-face" id="cinemaCoverFace">
             <span class="cinema-cover-label">OUR WEDDING</span><div class="cinema-page-flicker"></div>
           </div>
-          <div class="cinema-page-face back cinema-photo-page" style="background-image:url('https://lh3.googleusercontent.com/d/1YAixOZnHEHldg_o6mPDhgEeM6MqV3Eey')">
+          <div class="cinema-page-face back cinema-photo-page" style="background-image:url('')">
             <span class="cinema-chapter-label">CHAPTER 01 · 初見</span><div class="cinema-page-flicker"></div>
           </div>
         </div>
 
         <div class="cinema-leaf leaf2" data-leaf="2">
-          <div class="cinema-page-face front cinema-photo-page" style="background-image:url('https://lh3.googleusercontent.com/d/1aey7kyhNako614NRFF3miaJr0AX6PxRE')">
+          <div class="cinema-page-face front cinema-photo-page" style="background-image:url('')">
             <span class="cinema-chapter-label">CHAPTER 02</span>
           </div>
-          <div class="cinema-page-face back cinema-photo-page" style="background-image:url('https://lh3.googleusercontent.com/d/1W24KwV58-gi90oiWER-CBp4lpm7FQbnj')">
+          <div class="cinema-page-face back cinema-photo-page" style="background-image:url('')">
             <span class="cinema-chapter-label">CHAPTER 03 · 漫步</span>
           </div>
         </div>
 
         <div class="cinema-leaf leaf3" data-leaf="3">
-          <div class="cinema-page-face front cinema-photo-page" style="background-image:url('https://lh3.googleusercontent.com/d/1R-5GjU1deOlTrd8f_2MRvLHuAozIkfWk')">
+          <div class="cinema-page-face front cinema-photo-page" style="background-image:url('')">
             <span class="cinema-chapter-label">CHAPTER 04 · 約定</span>
           </div>
           <div class="cinema-page-face back">
@@ -3947,7 +4181,12 @@
           <circle class="energy-core-glint" cx="22" cy="16" r=".7"/>
         </svg>
 
-        <span class="ornament-tag"><span class="ornament-tag-text">SECRET</span></span>
+        <span class="ornament-tag">
+          <span class="ornament-tag-text">
+            SECRET
+            <small class="ornament-tag-subtext">悄悄話</small>
+          </span>
+        </span>
       </button>
 
       <span class="name-item">雅雲</span>
@@ -3991,12 +4230,14 @@
 
             <div class="f-back">
               <div class="page-layout">
-                <div class="photo-box" style="background-image: url('https://lh3.googleusercontent.com/d/1YAixOZnHEHldg_o6mPDhgEeM6MqV3Eey');"></div>
-                <div class="caption-box">
-                  <div class="caption-title">CHAPTER 01 ✦ 初見</div>
-                  <div class="caption-text">「在最剛好的季節,遇見想守護一生的妳。」</div>
+                <div class="photo-box" style="background-image: url('https://lh3.googleusercontent.com/d/1_nsZKKApjkgsM_Eovm4GxN2ZItwCPDlQ');"><button type="button" class="album-zoom-btn" aria-label="放大查看 CHAPTER 01 照片" onclick="openAlbumImage(0, event)" title="放大照片"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.4"></circle><path d="m15.5 15.5 5 5"></path></svg></button></div>
+                <div class="caption-footer">
+
+                  <div class="caption-box"><div class="caption-line"><span class="caption-title">初見</span><span class="caption-separator">✦</span><span class="caption-text">是命運的安排。</span></div></div>
+
+                  <div class="pg-num">01</div>
+
                 </div>
-                <div class="pg-num">01</div>
               </div>
             </div>
           </div>
@@ -4004,23 +4245,27 @@
           <div class="f-page" id="fp2">
             <div class="f-front">
               <div class="page-layout">
-                <div class="photo-box" style="background-image: url('https://lh3.googleusercontent.com/d/1aey7kyhNako614NRFF3miaJr0AX6PxRE');"></div>
-                <div class="caption-box">
-                  <div class="caption-title">CHAPTER 02 ✦ 凝望</div>
-                  <div class="caption-text">「眼中倒映著星光,以及你溫柔的側臉。」</div>
+                <div class="photo-box" style="background-image: url('https://lh3.googleusercontent.com/d/1HthhuXK1bevMpXjWbGka6Snzge9mYklV');"><button type="button" class="album-zoom-btn" aria-label="放大查看 CHAPTER 02 照片" onclick="openAlbumImage(1, event)" title="放大照片"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.4"></circle><path d="m15.5 15.5 5 5"></path></svg></button></div>
+                <div class="caption-footer">
+
+                  <div class="caption-box"><div class="caption-line"><span class="caption-title">凝望</span><span class="caption-separator">✦</span><span class="caption-text">是心動的開始。</span></div></div>
+
+                  <div class="pg-num">02</div>
+
                 </div>
-                <div class="pg-num">02</div>
               </div>
             </div>
 
             <div class="f-back">
               <div class="page-layout">
-                <div class="photo-box" style="background-image: url('https://lh3.googleusercontent.com/d/1W24KwV58-gi90oiWER-CBp4lpm7FQbnj');"></div>
-                <div class="caption-box">
-                  <div class="caption-title">CHAPTER 03 ✦ 漫步</div>
-                  <div class="caption-text">「牽著手走過的每一步,都是未來的形狀。」</div>
+                <div class="photo-box" style="background-image: url('https://lh3.googleusercontent.com/d/14cNRHjIeaz0_BShJU2eSK_DhYkDEPfVe');"><button type="button" class="album-zoom-btn" aria-label="放大查看 CHAPTER 03 照片" onclick="openAlbumImage(2, event)" title="放大照片"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.4"></circle><path d="m15.5 15.5 5 5"></path></svg></button></div>
+                <div class="caption-footer">
+
+                  <div class="caption-box"><div class="caption-line"><span class="caption-title">同行</span><span class="caption-separator">✦</span><span class="caption-text">是彼此的選擇。</span></div></div>
+
+                  <div class="pg-num">03</div>
+
                 </div>
-                <div class="pg-num">03</div>
               </div>
             </div>
           </div>
@@ -4028,27 +4273,46 @@
           <div class="f-page" id="fp3">
             <div class="f-front">
               <div class="page-layout">
-                <div class="photo-box" style="background-image: url(\'https://lh3.googleusercontent.com/d/1R-5GjU1deOlTrd8f_2MRvLHuAozIkfWk\');"></div>
-                <div class="caption-box">
-                  <div class="caption-title">CHAPTER 04 ✦ 約定</div>
-                  <div class="caption-text">「敬平凡而燦爛的日常,與彼此相守的一生。」</div>
+                <div class="photo-box" style="background-image: url('https://lh3.googleusercontent.com/d/19t16eEJXH-5rer3WA8WncDCbXaHytydR');"><button type="button" class="album-zoom-btn" aria-label="放大查看 CHAPTER 04 照片" onclick="openAlbumImage(3, event)" title="放大照片"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.4"></circle><path d="m15.5 15.5 5 5"></path></svg></button></div>
+                <div class="caption-footer">
+
+                  <div class="caption-box"><div class="caption-line"><span class="caption-title">約定</span><span class="caption-separator">✦</span><span class="caption-text">是一生的承諾。</span></div></div>
+
+                  <div class="pg-num">04</div>
+
                 </div>
-                <div class="pg-num">04</div>
               </div>
             </div>
 
-            <!-- 相簿真正封底：正常翻頁到這裡即結束，SECRET 不屬於普通相簿頁面 -->
-            <div class="f-back back-cover-pane" onclick="resetToCover(event)">
-              <div class="back-cover-frame">
-                <div class="back-cover-title-box">
-                  <div class="back-cover-title-line">The End</div>
+            <!-- 相簿最後背面：Our Story 情書式收尾；點擊仍可回到封面 -->
+            <div class="f-back back-cover-pane album-ending-pane" style="background-image: url('https://lh3.googleusercontent.com/d/13tPa9jtLtQQCLVEeIjpUMuITbFl9ouO1');" onclick="resetToCover(event)">
+              <div class="album-ending-frame">
+                <span class="album-ending-leaf album-ending-leaf-top">❧</span>
+                <span class="album-ending-leaf album-ending-leaf-bottom">❧</span>
+
+                <div class="album-ending-kicker">THE STORY OF US</div>
+                <div class="album-ending-title">Our Story</div>
+                <div class="album-ending-divider"><span></span><b>♡</b><span></span></div>
+
+                <div class="album-ending-poem">
+                  <p>從初見的悸動，<br>到凝望的確定，<br>從同行的步伐，<br>到約定一生的承諾。</p>
                 </div>
-                <div class="back-cover-divider">
-                  <span class="line"></span>
-                  <span class="heart">❤</span>
-                  <span class="line right"></span>
+
+                <div class="album-ending-message">
+                  <p>謝謝你，成為我生命中<br>最重要的那個人。</p>
+                  <p>未來的每一段旅程，<br>都想與你一起，慢慢走、好好愛。</p>
                 </div>
-                <div class="back-cover-tagline">謝謝你出現在我的生命裡<br>期待相聚</div>
+
+                <div class="album-ending-rings" aria-hidden="true">
+                  <svg viewBox="0 0 76 34" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="29" cy="18" rx="17" ry="10" transform="rotate(-25 29 18)" fill="none" stroke="#b58b49" stroke-width="1.5"/>
+                    <ellipse cx="47" cy="18" rx="17" ry="10" transform="rotate(25 47 18)" fill="none" stroke="#96713b" stroke-width="1.5"/>
+                    <path d="M35 7 L39 2 L43 7 L39 12 Z" fill="#fffaf0" stroke="#b58b49" stroke-width=".8"/>
+                  </svg>
+                </div>
+
+                <div class="album-ending-footer">To be Continued ...</div>
+                <div class="album-ending-sub">FOREVER BEGINS HERE&nbsp; ✦</div>
               </div>
             </div>
           </div>
@@ -4066,20 +4330,20 @@
     </div>
 
     <!-- 雙方家長區塊 -->
-    <div class="section-header">
+    <div class="section-header" id="familyIntroSectionHeader">
       <div class="section-title">JOIN OUR FAMILIES</div>
     </div>
 
-    <div class="refined-card">
+    <div class="refined-card" id="familyIntroCard">
       <div class="family-lead-quote">
-        我們將挽著手・並肩同行<br>誠摯邀請您參與見證我們的幸福新頁
+        誠摯邀請您一同見證我們的幸福時刻
       </div>
       <div class="family-board">
         <div class="family-column">
           <div class="family-role-tc">新郎</div>
           <div class="family-person-name">李健泰</div>
           <div class="family-parents-role">男方家長</div>
-          <div class="family-parent-couple">李茄貫 <span class="star">✦</span> 徐鳳美</div>
+          <div class="family-parent-couple"><span class="parent-name">李茄貫</span><span class="star">✦</span><span class="parent-name">徐鳳美</span></div>
         </div>
         
         <div class="family-center-axis">
@@ -4099,7 +4363,7 @@
           <div class="family-role-tc">新娘</div>
           <div class="family-person-name">張雅雲</div>
           <div class="family-parents-role">女方家長</div>
-          <div class="family-parent-couple">張天春 <span class="star">✦</span> 許春滿</div>
+          <div class="family-parent-couple"><span class="parent-name">張天春</span><span class="star">✦</span><span class="parent-name">許春滿</span></div>
         </div>
       </div>
     </div>
@@ -4184,7 +4448,7 @@
       
       <div class="location-slider-container" id="locSliderContainer">
         <div class="location-slides-track" id="locSlidesTrack">
-          <div class="loc-slide-item" onclick="openPureImage(0)"><img class="loc-slide-img" src="https://lh3.googleusercontent.com/d/16Q81EigpljmCWEelyc0w0Xba_F_PrrEY" alt="將捷金鬱金香酒店"><div class="loc-zoom-badge">🔍 點擊全螢幕放大</div></div>
+          <div class="loc-slide-item" onclick="openPureImage(0)"><img class="loc-slide-img" src="https://lh3.googleusercontent.com/d/1YAixOZnHEHldg_o6mPDhgEeM6MqV3Eey" alt="將捷金鬱金香酒店"><div class="loc-zoom-badge">🔍 點擊全螢幕放大</div></div>
           <div class="loc-slide-item" onclick="openPureImage(1)"><img class="loc-slide-img" src="https://lh3.googleusercontent.com/d/1aey7kyhNako614NRFF3miaJr0AX6PxRE" alt="位置指引"><div class="loc-zoom-badge">🔍 點擊全螢幕放大</div></div>
         </div>
         <button class="loc-arrow-btn loc-arrow-left" onclick="slideLocation(-1)">❮</button>
@@ -4225,7 +4489,20 @@
 
     (function getGuestNameFromUrl() {
       const mockElem = document.getElementById('mockGuestName');
-      if (mockElem && serverGuestName) mockElem.innerText = 'Exclusively For ✦ ' + serverGuestName;
+      if (!mockElem) return;
+
+      const guestName = (serverGuestName || '').trim();
+      // 「親愛的你」是未帶入姓名時的預設提示，不視為有效賓客姓名。
+      const isPlaceholderName = ['親愛的你', '親愛的賓客', '賓客', '你'].includes(guestName);
+
+      if (guestName && !isPlaceholderName) {
+        mockElem.innerText = '專屬於 ✦ ' + guestName;
+        mockElem.style.display = '';
+      } else {
+        // 未帶姓名或仍是預設提示時，隱藏整行與其佔位空間。
+        mockElem.innerText = '';
+        mockElem.style.display = 'none';
+      }
     })();
 
     (function initHangingOrnament() {
@@ -4891,7 +5168,7 @@
     }
 
     const locationImages = [
-      "https://lh3.googleusercontent.com/d/16Q81EigpljmCWEelyc0w0Xba_F_PrrEY",
+      "https://lh3.googleusercontent.com/d/1YAixOZnHEHldg_o6mPDhgEeM6MqV3Eey",
       "https://lh3.googleusercontent.com/d/1aey7kyhNako614NRFF3miaJr0AX6PxRE"
     ];
     let currentLocIndex = 0;
@@ -4917,6 +5194,55 @@
       currentLocIndex = index;
       updateSliderPosition();
     }
+
+    // 手機觸控左右滑動切換地點圖片。垂直滑動仍交由頁面正常捲動。
+    (function enableLocationSwipe() {
+      const slider = document.getElementById('locSliderContainer');
+      if (!slider) return;
+
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchMoved = false;
+      let suppressClickUntil = 0;
+      const swipeThreshold = 42;
+
+      slider.addEventListener('touchstart', (event) => {
+        if (!event.touches || event.touches.length !== 1) return;
+        const target = event.target;
+        if (target.closest('.loc-arrow-btn, .loc-dot')) return;
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+        touchMoved = false;
+      }, { passive: true });
+
+      slider.addEventListener('touchmove', (event) => {
+        if (!event.touches || event.touches.length !== 1) return;
+        const dx = event.touches[0].clientX - touchStartX;
+        const dy = event.touches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+          touchMoved = true;
+        }
+      }, { passive: true });
+
+      slider.addEventListener('touchend', (event) => {
+        if (!touchMoved || !event.changedTouches || !event.changedTouches.length) return;
+        const dx = event.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dx) >= swipeThreshold) {
+          slideLocation(dx < 0 ? 1 : -1);
+          suppressClickUntil = Date.now() + 550;
+        }
+        touchMoved = false;
+      }, { passive: true });
+
+      // 避免滑動結束後觸發圖片點擊放大，真正點擊仍可正常開啟全螢幕。
+      slider.addEventListener('click', (event) => {
+        if (Date.now() < suppressClickUntil) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+    })();
 
     const modal = document.getElementById('pureImageModal');
     const targetImg = document.getElementById('modalTargetImg');
@@ -4945,12 +5271,78 @@
       document.body.classList.add('lock-screen');
     }
 
+    const albumPhotoImages = [
+      "https://lh3.googleusercontent.com/d/1_nsZKKApjkgsM_Eovm4GxN2ZItwCPDlQ",
+      "https://lh3.googleusercontent.com/d/1HthhuXK1bevMpXjWbGka6Snzge9mYklV",
+      "https://lh3.googleusercontent.com/d/14cNRHjIeaz0_BShJU2eSK_DhYkDEPfVe",
+      "https://lh3.googleusercontent.com/d/19t16eEJXH-5rer3WA8WncDCbXaHytydR"
+    ];
+    let currentAlbumImageIndex = 0;
+
+    function openAlbumImage(index, event) {
+      if (event) { event.preventDefault(); event.stopPropagation(); }
+      currentAlbumImageIndex = Math.max(0, Math.min(albumPhotoImages.length - 1, index));
+      savedScrollY = window.scrollY || window.pageYOffset;
+      targetImg.src = albumPhotoImages[currentAlbumImageIndex];
+      targetImg.alt = `婚禮相簿照片 CHAPTER ${String(currentAlbumImageIndex + 1).padStart(2, '0')}`;
+      resetImageZoom();
+      modal.classList.add('album-gallery-open', 'show');
+      document.documentElement.classList.add('lock-screen');
+      document.body.classList.add('lock-screen');
+      updateAlbumModalControls();
+    }
+
+    function updateAlbumModalControls() {
+      const counter = document.getElementById('albumModalCounter');
+      const prev = document.getElementById('albumModalPrev');
+      const next = document.getElementById('albumModalNext');
+      if (counter) counter.textContent = `${String(currentAlbumImageIndex + 1).padStart(2, '0')} / 04`;
+      if (prev) prev.disabled = currentAlbumImageIndex === 0;
+      if (next) next.disabled = currentAlbumImageIndex === albumPhotoImages.length - 1;
+    }
+
+    function changeAlbumImage(direction) {
+      if (!modal.classList.contains('album-gallery-open')) return;
+      const nextIndex = currentAlbumImageIndex + direction;
+      if (nextIndex < 0 || nextIndex >= albumPhotoImages.length) return;
+      currentAlbumImageIndex = nextIndex;
+      targetImg.src = albumPhotoImages[currentAlbumImageIndex];
+      targetImg.alt = `婚禮相簿照片 CHAPTER ${String(currentAlbumImageIndex + 1).padStart(2, '0')}`;
+      resetImageZoom();
+      updateAlbumModalControls();
+    }
+
     function closePureImage() {
-      modal.classList.remove('show');
+      modal.classList.remove('show', 'album-gallery-open');
       document.documentElement.classList.remove('lock-screen');
       document.body.classList.remove('lock-screen');
       window.scrollTo(0, savedScrollY);
     }
+
+    document.addEventListener('keydown', (event) => {
+      if (!modal.classList.contains('show')) return;
+      if (event.key === 'Escape') closePureImage();
+      if (modal.classList.contains('album-gallery-open')) {
+        if (event.key === 'ArrowLeft') changeAlbumImage(-1);
+        if (event.key === 'ArrowRight') changeAlbumImage(1);
+      }
+    });
+
+    let albumSwipeStartX = null, albumSwipeStartY = null;
+    modalViewport.addEventListener('touchstart', (event) => {
+      if (!modal.classList.contains('album-gallery-open') || imgScale > 1 || event.touches.length !== 1) return;
+      albumSwipeStartX = event.touches[0].clientX;
+      albumSwipeStartY = event.touches[0].clientY;
+    }, { passive: true });
+    modalViewport.addEventListener('touchend', (event) => {
+      if (albumSwipeStartX === null || !modal.classList.contains('album-gallery-open') || imgScale > 1) {
+        albumSwipeStartX = albumSwipeStartY = null; return;
+      }
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - albumSwipeStartX, dy = touch.clientY - albumSwipeStartY;
+      if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.25) changeAlbumImage(dx < 0 ? 1 : -1);
+      albumSwipeStartX = albumSwipeStartY = null;
+    }, { passive: true });
 
     if (targetImg) {
       targetImg.addEventListener('mousedown', (e) => {
@@ -5906,6 +6298,32 @@
 
 </script>
 
+
+
+
+
+<style id="family-invitation-one-line-layout-v1">
+  .refined-card .family-lead-quote {
+    text-align: center;
+    font-size: 15px;
+    line-height: 1.8;
+    letter-spacing: 2px;
+    margin: 2px 0 26px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 600px) {
+    .refined-card .family-lead-quote {
+      font-size: 12px;
+      letter-spacing: 1px;
+      line-height: 1.8;
+      margin: 0 0 22px;
+      white-space: normal;
+    }
+  }
+</style>
+
 </body>
 
 <style id="heart-wrap-energy-polish-v1">
@@ -6013,6 +6431,9 @@
   #exclusiveOrnamentAnchor .ornament-tag{top:27px!important;}
 }
 </style>
+
+
+
 </html>
 <style id="v27-secret-main-invitation-polish">
 /* V27: main invitation SECRET is now an elegant heart seal; the cinematic magic remains inside the micro-film. */
@@ -6229,6 +6650,20 @@
     text-shadow: 0 0 2px rgba(255,250,232,.98), 0 0 7px rgba(219,181,103,.72), 0 0 11px rgba(219,181,103,.3);
   }
 }
+
+/* SECRET 下方的中文副標：不改變原本標籤定位與呼吸動畫 */
+#exclusiveOrnamentAnchor .ornament-tag-subtext {
+  display: block;
+  margin-top: 0px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+  line-height: 1.35;
+  text-align: center;
+  white-space: nowrap;
+  color: inherit;
+}
 @media (prefers-reduced-motion: reduce) {
   /* Keep the explicitly requested entrance pulse available for visual confirmation. */
   #exclusiveOrnamentAnchor .ornament-tag > .ornament-tag-text { animation: secretGlyphPulseRealFix 4.2s ease-in-out infinite !important; }
@@ -6255,8 +6690,9 @@
   #exclusiveOrnamentAnchor .heart-svg {
     transform: translateY(1px) !important;
   }
+  /* 手機版：讓 SECRET／悄悄話更靠近愛心，縮短兩者間距 */
   #exclusiveOrnamentAnchor .ornament-tag {
-    top: 29px !important;
+    top: 25px !important;
   }
 }
 </style>
@@ -6300,7 +6736,7 @@
 /* Mobile only: move SECRET slightly upward while keeping the heart position unchanged. */
 @media (max-width: 600px) {
   #exclusiveOrnamentAnchor .ornament-tag {
-    top: 30px !important;
+    top: 27px !important;
   }
 }
 </style>
@@ -6420,4 +6856,160 @@
   #secretCinematicStage .cinema-book-mirror .cinema-secret-spread::after{animation:none;opacity:.14;}
 }
 
+
+
+/* ========================================================
+   相簿照片黑色內陰影修正
+   - 移除書頁靠內側的黑色內陰影
+   - 移除照片本身的內陰影
+   - 保留紙張層次、金色邊框及書頁外側投影
+   ======================================================== */
+#bookViewport .f-front {
+  box-shadow:
+    2px 0 0 #fbfaf7,
+    4px 0 0 #f4f1ea,
+    6px 0 0 #eae6dc,
+    0 14px 28px rgba(0, 0, 0, 0.12) !important;
+}
+
+#bookViewport .f-back {
+  box-shadow:
+    -2px 0 0 #fbfaf7,
+    -4px 0 0 #f4f1ea,
+    -6px 0 0 #eae6dc,
+    0 14px 28px rgba(0, 0, 0, 0.12) !important;
+}
+
+#bookViewport .photo-box {
+  box-shadow: none !important;
+}
+
+
+
+    /* ========================================================
+       封底圖片：延伸鋪滿整個封底，保留金色書脊、邊框與立體陰影
+       ======================================================== */
+    #bookViewport .album-ending-pane {
+      /* 圖片鋪滿封底整張紙面，填補上下左右原本的白色留白 */
+      background-image: url('https://lh3.googleusercontent.com/d/10qdJGIk4oIlwTSQ7Se-iCalbQSyQPlIH') !important;
+      background-size: cover !important;
+      background-position: center center !important;
+      background-repeat: no-repeat !important;
+      border: 1.5px solid #bfa065 !important;
+      border-right: none !important;
+      padding: 10px 22px 10px 8px !important;
+      box-shadow:
+        -1px 0 0 #fdfcf9,
+        -2px 0 0 #f5f2ea,
+        -3px 0 0 #ece8dc,
+        -4px 0 0 #ded7c7,
+        0 4px 0 #d9cdb8,
+        -12px 16px 32px rgba(45,35,20,.18),
+        inset 0 0 0 1px rgba(255,255,255,.98) !important;
+    }
+
+    /* 保留右側香檳金立體書脊與細金線 */
+    #bookViewport .album-ending-pane::before,
+    #bookViewport .album-ending-pane::after {
+      display: block !important;
+    }
+
+    /* 內框只保留金色線條，不再限制圖片只能顯示在框內 */
+    #bookViewport .album-ending-pane > .album-ending-frame {
+      background: transparent !important;
+      background-image: none !important;
+      border: 1px solid rgba(181,139,73,.68) !important;
+      outline: 1px solid rgba(181,139,73,.24) !important;
+      outline-offset: -5px !important;
+      box-shadow: inset 0 1px 2px rgba(140,115,75,.1), 0 1px 1px rgba(255,255,255,.98) !important;
+    }
+
+    /* 隱藏原本 Our Story 文字與裝飾，保留內框線條 */
+    #bookViewport .album-ending-pane > .album-ending-frame > * {
+      display: none !important;
+    }
 </style>
+
+
+<style id="family-intro-compact-spacing-final">
+  /* 雙方家長卡片：只收緊垂直留白，保留原本左右雙欄與視覺風格 */
+  #familyIntroSectionHeader { margin: 30px 0 12px !important; }
+  #familyIntroCard { padding: 24px 22px 26px !important; margin-bottom: 24px !important; }
+  #familyIntroCard .family-lead-quote {
+    margin: 0 0 22px !important;
+    line-height: 1.65 !important;
+  }
+  #familyIntroCard .family-board { padding: 0 !important; align-items: center !important; }
+  #familyIntroCard .family-role-tc { margin-bottom: 7px !important; }
+  #familyIntroCard .family-person-name { margin-bottom: 15px !important; line-height: 1.08 !important; }
+  #familyIntroCard .family-parents-role { margin-bottom: 6px !important; }
+  #familyIntroCard .family-axis-line { height: 46px !important; }
+  #familyIntroCard .family-ring-icon { margin: 5px 0 !important; }
+
+  @media (max-width: 600px) {
+    #familyIntroSectionHeader { margin: 26px 0 10px !important; }
+    #familyIntroCard { padding: 22px 12px 24px !important; }
+    #familyIntroCard .family-lead-quote { margin-bottom: 18px !important; line-height: 1.6 !important; }
+    #familyIntroCard .family-person-name { margin-bottom: 12px !important; }
+    #familyIntroCard .family-axis-line { height: 38px !important; }
+    #familyIntroCard .family-ring-icon { margin: 4px 0 !important; }
+  }
+</style>
+
+
+<style id="family-intro-position-and-parent-star-v1">
+  /* 新人稱謂與姓名微微上移 */
+  #familyIntroCard .family-role-tc,
+  #familyIntroCard .family-person-name {
+    transform: translateY(-7px);
+  }
+
+  /* 家長標題與姓名組微微下移 */
+  #familyIntroCard .family-parents-role,
+  #familyIntroCard .family-parent-couple {
+    transform: translateY(8px);
+  }
+
+  /* 家長姓名採三欄排列，星號固定在兩位家長正中間 */
+  #familyIntroCard .family-parent-couple {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 9px;
+    white-space: nowrap;
+    text-indent: 0 !important;
+    letter-spacing: 1.5px;
+  }
+
+  #familyIntroCard .family-parent-couple .parent-name {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  #familyIntroCard .family-parent-couple .star {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+    line-height: 1;
+  }
+
+  @media (max-width: 600px) {
+    #familyIntroCard .family-role-tc,
+    #familyIntroCard .family-person-name {
+      transform: translateY(-5px);
+    }
+
+    #familyIntroCard .family-parents-role,
+    #familyIntroCard .family-parent-couple {
+      transform: translateY(6px);
+    }
+
+    #familyIntroCard .family-parent-couple {
+      gap: 5px;
+      letter-spacing: 1px;
+    }
+  }
+</style>
+
