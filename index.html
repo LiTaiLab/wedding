@@ -4471,10 +4471,11 @@
   </div>
 
   <script>
-    // Google Apps Script HtmlService 會在伺服器端替換以下模板值；
-    // 不依賴 iframe 的 window.location.search，避免專屬網址參數在沙箱頁面中讀不到。
-    const rawGuestName = <?!= JSON.stringify(typeof guestName !== 'undefined' ? guestName : '') ?>;
-    const rawSecretNote = <?!= JSON.stringify(typeof secretNote !== 'undefined' ? secretNote : '') ?>;
+    // GitHub Pages 靜態版：不使用 Google Apps Script 模板語法。
+    // 賓客姓名與悄悄話改由網址參數帶入，保留 ?to= / ?name= 與
+    // ?secret_note= / ?groom_note= / ?bride_note= 的既有格式。
+    const rawGuestName = '';
+    const rawSecretNote = '';
 
     const urlParams = new URLSearchParams(window.location.search);
     const serverGuestName = (rawGuestName && rawGuestName.trim() !== '') ? rawGuestName.trim() : (urlParams.get('to') || urlParams.get('name') || '');
