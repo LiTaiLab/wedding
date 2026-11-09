@@ -3875,7 +3875,6 @@
     
     <div class="top-action-bar">
       <button class="envelope-skip-btn" onclick="skipEnvelopeAnimation(event)">SKIP ✦</button>
-      <div class="music-toggle" id="musicBtn" onclick="toggleAudio()" title="播放/暫停背景音樂">♫</div>
     </div>
 
     <div class="scene">
@@ -4474,13 +4473,48 @@
   <script>
     // Google Apps Script HtmlService 會在伺服器端替換以下模板值；
     // 不依賴 iframe 的 window.location.search，避免專屬網址參數在沙箱頁面中讀不到。
-    const rawGuestName = '';
-    const rawSecretNote = '';
+    const rawGuestName = <?!= JSON.stringify(typeof guestName !== 'undefined' ? guestName : '') ?>;
+    const rawSecretNote = <?!= JSON.stringify(typeof secretNote !== 'undefined' ? secretNote : '') ?>;
 
     const urlParams = new URLSearchParams(window.location.search);
     const serverGuestName = (rawGuestName && rawGuestName.trim() !== '') ? rawGuestName.trim() : (urlParams.get('to') || urlParams.get('name') || '');
-    // 單一悄悄話：優先使用 secret_note，保留舊參數作為相容備援。
-    const serverSecretNote = (rawSecretNote && rawSecretNote.trim() !== '') ? rawSecretNote.trim() : (urlParams.get('secret_note') || urlParams.get('groom_note') || urlParams.get('bride_note') || '');
+
+    // Base64 解碼悄悄話。
+    // 新版網址格式為 b64:xxxx；舊版未加標記的 Base64 也保留相容。
+    function decodeSecretNoteParam(value, allowUnmarkedBase64 = true) {
+      if (!value) return '';
+
+      let source = value.trim();
+      const hasBase64Marker = source.startsWith('b64:');
+
+      if (hasBase64Marker) {
+        source = source.substring(4);
+      } else if (!allowUnmarkedBase64) {
+        // Apps Script 傳入的一般原文不應被誤判成 Base64。
+        return source;
+      }
+
+      const normalized = source.replace(/-/g, '+').replace(/_/g, '/');
+      if (!/^[A-Za-z0-9+/]*={0,2}$/.test(normalized) || normalized.length % 4 === 1) {
+        return value;
+      }
+
+      try {
+        const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+        return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      } catch (error) {
+        return value;
+      }
+    }
+
+    // 單一悄悄話：優先使用 Apps Script 傳入值（若帶 b64: 才解碼），
+    // 否則讀取網址參數並解碼。傳給下方刮刮樂及秘密章節的始終是原文。
+    const secretNoteParam = urlParams.get('secret_note') || urlParams.get('groom_note') || urlParams.get('bride_note') || '';
+    const serverSecretNote = (rawSecretNote && rawSecretNote.trim() !== '')
+      ? decodeSecretNoteParam(rawSecretNote.trim(), false)
+      : decodeSecretNoteParam(secretNoteParam);
     // 舊版相簿程式仍有部分函式使用 groom/bride 命名，統一指向同一份內容，避免破壞既有動畫流程。
     const serverGroomNote = serverSecretNote;
     const serverBrideNote = '';
@@ -6125,9 +6159,18 @@
       cinemaSecretSpread.className = 'cinema-secret-spread';
       cinemaSecretSpread.innerHTML = `
         <div class="magic-paper-glow"></div>
-        <div class="letter-inner">
-          <div class="letter-greeting" id="cinemaUnifiedGreeting">哈囉</div>
-          <div class="letter-body" id="cinemaUnifiedBody"></div>
+        <div class="letter-inner secret-spread-layout">
+          <section class="secret-note-page" aria-label="悄悄話內容">
+            <div class="secret-note-topline"><span>A LITTLE NOTE</span></div>
+            <div class="letter-body" id="cinemaUnifiedBody"></div>
+            <div class="secret-note-footer"><span></span><b>JUST BETWEEN US</b><span></span></div>
+          </section>
+          <section class="secret-memory-page" aria-label="紀念照片">
+            <figure class="secret-memory-frame">
+              <img id="cinemaSecretPhoto" alt="我們的紀念照片" loading="eager">
+            </figure>
+            <div class="secret-memory-caption">A MEMORY WITH YOU</div>
+          </section>
         </div>`;
       (base || mirror).appendChild(cinemaSecretSpread);
 
@@ -6155,20 +6198,37 @@
       });
     }
 
-    function prepareUnifiedCinemaLetter(){
-      const greeting = document.getElementById('cinemaUnifiedGreeting');
-      const body = document.getElementById('cinemaUnifiedBody');
-      const secretNote = (typeof serverSecretNote !== 'undefined' ? serverSecretNote : '').trim();
-      const guest = (typeof serverGuestName !== 'undefined' ? serverGuestName : '').trim();
-      const shortName = getSecretGreetingName(guest);
+    function getSecretPhotoUrl(){
+      // 可透過網址 ?secret_photo=圖片網址 更換右頁照片。
+      return 'https://lh3.googleusercontent.com/d/10S62LFD_oyINFyQkQDqrPDIJ46dLhDkg';
+      const params = new URLSearchParams(window.location.search);
+      const customUrl = (params.get('secret_photo') || params.get('secret_image') || '').trim();
+      if (customUrl) {
+        try {
+          const parsed = new URL(customUrl, window.location.href);
+          if (parsed.protocol === 'https:' || parsed.protocol === 'http:') return parsed.href;
+        } catch (_) {}
+      }
 
-      // 稱呼與悄悄話使用同一套逐字手寫效果。
-      appendHandwrittenChars(greeting, shortName ? `哈囉 ${shortName}` : '哈囉');
-      const combined = secretNote;
+      // 未指定 secret_photo 時，沿用相簿第一張照片作為預設紀念照。
+      const firstPhoto = document.querySelector('.photo-box');
+      if (firstPhoto) {
+        const bg = getComputedStyle(firstPhoto).backgroundImage || '';
+        const match = bg.match(/^url\(["']?(.*?)["']?\)$/);
+        if (match && match[1]) return match[1];
+      }
+      return '';
+    }
+
+    function prepareUnifiedCinemaLetter(){
+      const body = document.getElementById('cinemaUnifiedBody');
+      const photo = document.getElementById('cinemaSecretPhoto');
+      const secretNote = (typeof serverSecretNote !== 'undefined' ? serverSecretNote : '').trim();
+
       if (body){
         body.innerHTML='';
-        // 依原始順序逐字建立，CSS columns 會自然先完成左頁，再流到右頁。
-        const chars = Array.from(combined.replace(/\r/g,''));
+        // 左頁只顯示 secret_note 原文，保留網址內容的換行與段落。
+        const chars = Array.from(secretNote.replace(/\r/g,''));
         chars.forEach((char)=>{
           const span=document.createElement('span');
           span.className='hand-char'+(/[,，。.!！?？、：:；;「」『』…—-]/.test(char)?' is-punctuation':'');
@@ -6183,14 +6243,47 @@
           body.appendChild(span);
         });
       }
+
+      if (photo) {
+        const photoUrl = getSecretPhotoUrl();
+        photo.src = photoUrl;
+        photo.closest('.secret-memory-frame')?.classList.toggle('has-photo', Boolean(photoUrl));
+      }
     }
 
+    // 桌機版依左頁實際可用高度自動縮小字級；仍放不下時可捲動，不裁切內容。
+    function fitUnifiedLetterBody(){
+      if (window.matchMedia('(max-width: 640px)').matches) return;
+      const body = document.getElementById('cinemaUnifiedBody');
+      if (!body || !body.clientHeight) return;
+
+      let size = Math.min(parseFloat(window.getComputedStyle(body).fontSize) || 16, 16);
+      const minSize = 10;
+      body.style.setProperty('overflow-y', 'hidden', 'important');
+
+      for (let i = 0; i < 20; i++){
+        body.style.setProperty('font-size', size + 'px', 'important');
+        if (body.scrollHeight <= body.clientHeight + 2 || size <= minSize) break;
+        size = Math.max(minSize, size - 0.5);
+      }
+      body.style.setProperty(
+        'overflow-y',
+        body.scrollHeight > body.clientHeight + 2 ? 'auto' : 'hidden',
+        'important'
+      );
+    }
+
+    window.addEventListener('resize', ()=>{
+      if (window.matchMedia('(min-width: 641px)').matches){
+        requestAnimationFrame(fitUnifiedLetterBody);
+      }
+    });
+
     function startUnifiedHandwriting(){
-      const greeting = document.getElementById('cinemaUnifiedGreeting');
       const body = document.getElementById('cinemaUnifiedBody');
       if (!body) return;
-      // 先逐字顯示「哈囉 {名}」，再接續逐字寫出悄悄話。
-      const chars = [ ...(greeting ? greeting.querySelectorAll('.hand-char') : []), ...body.querySelectorAll('.hand-char') ];
+      // 左頁悄悄話逐字寫出；右頁照片在翻頁完成時同步呈現。
+      const chars = [...body.querySelectorAll('.hand-char')];
       let delay = 180;
       chars.forEach((span)=>{
         const ch = span.textContent || '';
@@ -6207,7 +6300,12 @@
       cinemaSecretSpread.classList.add('is-lit');
       cinemaTimer(()=>{
         cinemaSecretSpread.classList.add('is-ready');
-        cinemaTimer(startUnifiedHandwriting, 520);
+        requestAnimationFrame(()=>{
+          requestAnimationFrame(()=>{
+            fitUnifiedLetterBody();
+            cinemaTimer(startUnifiedHandwriting, 520);
+          });
+        });
       }, 720);
     }
 
@@ -7013,3 +7111,511 @@
   }
 </style>
 
+
+
+
+<style id="secret-note-photo-spread-v1">
+/* 悄悄話雙頁：左頁文字、右頁照片；保留原本自動翻頁與逐字手寫流程 */
+#secretCinematicStage .cinema-book-mirror .cinema-secret-spread .letter-inner.secret-spread-layout{
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  align-items:stretch; gap:0; padding:clamp(10px,2.2%,22px) clamp(8px,1.8%,18px);
+  box-sizing:border-box;
+}
+#secretCinematicStage .secret-note-page,#secretCinematicStage .secret-memory-page{
+  position:relative; min-width:0; min-height:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; box-sizing:border-box;
+}
+#secretCinematicStage .secret-note-page{
+  padding:clamp(16px,4%,38px) clamp(14px,5%,46px); justify-content:flex-start;
+}
+#secretCinematicStage .secret-note-topline{
+  display:flex; align-items:center; justify-content:center; gap:10px; width:100%;
+  margin:0 0 clamp(18px,3.5vw,34px); color:#b49769;
+  font:500 clamp(8px,1vw,11px)/1.4 'Cinzel','Noto Serif TC',serif;
+  letter-spacing:clamp(2px,.42vw,4px);
+}
+#secretCinematicStage .secret-note-topline i{font-style:normal;font-size:10px;color:#c3a16b;}
+#secretCinematicStage .secret-note-page .letter-body{
+  width:100%; flex:1; min-height:0; padding:0 2% 12px; box-sizing:border-box;
+  columns:auto; column-count:1; column-gap:0; overflow:hidden; white-space:pre-wrap;
+  overflow-wrap:anywhere; font-family:'Iansui','Noto Serif TC',serif;
+  font-size:clamp(11px,1.35vw,16px); line-height:2.05; letter-spacing:.45px;
+  color:#62594d; text-align:left; text-wrap:pretty;transform: translate(-20px, -20px);
+}
+#secretCinematicStage .secret-note-footer{
+  display:flex; align-items:center; justify-content:center; gap:10px; width:82%;
+  margin-top:clamp(10px,2%,18px); color:#b69a6e;
+  font:500 clamp(7px,.82vw,9px)/1.4 'Cinzel',serif;
+  letter-spacing:clamp(1.6px,.3vw,3px); white-space:nowrap;
+}
+#secretCinematicStage .secret-note-footer span{
+  height:1px; flex:1; background:linear-gradient(90deg,transparent,rgba(183,151,103,.65));
+}
+#secretCinematicStage .secret-note-footer span:last-child{
+  background:linear-gradient(90deg,rgba(183,151,103,.65),transparent);
+}
+#secretCinematicStage .secret-memory-page{
+  padding:clamp(18px,4%,38px) clamp(12px,4%,36px); justify-content:center;
+}
+#secretCinematicStage .secret-memory-frame{
+  position:relative; width:min(100%,440px); aspect-ratio:4 / 3;
+  padding:clamp(7px,.9vw,11px); background:#fffefa;
+  border:1px solid rgba(190,158,105,.62);
+  box-shadow:0 8px 22px rgba(73,55,32,.12),inset 0 0 0 1px rgba(255,255,255,.95);
+  transform:rotate(.35deg); box-sizing:border-box;
+}
+#secretCinematicStage .secret-memory-frame::before{
+  content:''; position:absolute; inset:4px; border:1px solid rgba(196,169,126,.22);
+  pointer-events:none; z-index:1;
+}
+#secretCinematicStage .secret-memory-frame img{
+  display:block; width:100%; height:100%; object-fit:cover;
+  background:linear-gradient(135deg,#eee7da,#fffdf8);
+}
+#secretCinematicStage .secret-memory-frame:not(.has-photo) img{visibility:hidden;}
+#secretCinematicStage .secret-memory-caption{
+  margin-top:clamp(18px,3vw,30px); color:#b3976b;
+  font:500 clamp(8px,1.05vw,11px)/1.5 'Cinzel',serif;
+  letter-spacing:clamp(2px,.48vw,4.5px); text-align:center;
+}
+#secretCinematicStage .secret-memory-mark{
+  margin-top:clamp(9px,1.8vw,17px); color:#c1a16f; font-size:13px; line-height:1;
+}
+#secretCinematicStage .secret-note-page .letter-body .hand-char{
+  opacity:0; display:inline; clip-path:inset(0 100% 0 0); filter:blur(1.4px);
+}
+#secretCinematicStage .secret-note-page .letter-body .hand-char.is-written{
+  animation:v19HandWrite .34s cubic-bezier(.18,.78,.18,1) forwards;
+}
+@media(max-width:640px){
+  #secretCinematicStage .cinema-book-mirror .cinema-secret-spread .letter-inner.secret-spread-layout{padding:7px 5px;}
+  #secretCinematicStage .secret-note-page{padding:12px 9px 10px;}
+  #secretCinematicStage .secret-note-topline{gap:5px;margin-bottom:12px;font-size:7px;letter-spacing:1.5px;}
+  #secretCinematicStage .secret-note-page .letter-body{
+    padding:0 1px 6px; font-size:clamp(8px,2.35vw,11px); line-height:1.82; letter-spacing:.08px;
+  }
+  #secretCinematicStage .secret-note-footer{width:96%;gap:4px;margin-top:8px;font-size:5.5px;letter-spacing:1px;}
+  #secretCinematicStage .secret-memory-page{padding:12px 8px;}
+  #secretCinematicStage .secret-memory-frame{padding:5px;aspect-ratio:4 / 3;}
+  #secretCinematicStage .secret-memory-caption{margin-top:12px;font-size:6px;letter-spacing:1.4px;}
+  #secretCinematicStage .secret-memory-mark{margin-top:7px;font-size:10px;}
+}
+</style>
+
+
+
+<style id="secret-spread-alignment-fix">
+/* A LITTLE NOTE：整組稍微向左，維持原字級與視覺風格 */
+#secretCinematicStage .secret-note-topline{
+  position:relative !important;
+  left:clamp(-28px,-2.2vw,-14px) !important;
+  width:calc(100% + clamp(0px,2.2vw,28px)) !important;
+  transform: translateX(10px);
+}
+
+/* JUST BETWEEN US：同樣向左微調，文字本身仍置中 */
+#secretCinematicStage .secret-note-footer{
+  position:relative !important;
+  left:clamp(-28px,-2.2vw,-14px) !important;
+  width:96% !important;
+  margin-left:0 !important;
+  margin-right:auto !important;
+  transform: translateX(10px);
+}
+
+/* 右頁照片：修正原本偏左，讓相框在右頁可用空間中左右留白一致 */
+#secretCinematicStage .secret-memory-page{
+  overflow:visible !important;
+}
+#secretCinematicStage .secret-memory-frame{
+  position:relative !important;
+  left:clamp(16px,3.2vw,38px) !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  transform:rotate(.35deg) !important;
+  box-sizing:border-box !important;
+}
+
+/* A MEMORY WITH YOU：縮小並強制單行，垂直位置與左頁 footer 對齊 */
+#secretCinematicStage .secret-memory-caption{
+  position:absolute !important;
+  left:50% !important;
+  bottom:clamp(7%,8.5%,12%) !important;
+  width:max-content !important;
+  max-width:calc(100% - 16px) !important;
+  margin:0 !important;
+  transform:translateX(-50%) !important;
+  white-space:nowrap !important;
+  text-align:center !important;
+  font-size:clamp(7px,.78vw,9px) !important;
+  line-height:1.2 !important;
+  letter-spacing:clamp(1.3px,.24vw,2.5px) !important;
+}
+#secretCinematicStage .secret-memory-mark{
+  position:absolute !important;
+  left:50% !important;
+  bottom:clamp(2%,3.2%,5%) !important;
+  margin:0 !important;
+  transform:translateX(-50%) !important;
+}
+@media(max-width:640px){
+  #secretCinematicStage .secret-note-topline{
+    left:-8px !important;
+    width:calc(100% + 8px) !important;
+  }
+  #secretCinematicStage .secret-note-footer{
+    left:-8px !important;
+    width:96% !important;
+  }
+  #secretCinematicStage .secret-memory-frame{
+    left:clamp(8px,2.4vw,16px) !important;
+  }
+  #secretCinematicStage .secret-memory-caption{
+    bottom:10% !important;
+    max-width:calc(100% - 8px) !important;
+    font-size:clamp(5.5px,1.45vw,7px) !important;
+    letter-spacing:.7px !important;
+  }
+  #secretCinematicStage .secret-memory-mark{
+    bottom:3% !important;
+  }
+}
+</style>
+
+
+
+<!-- 手機版悄悄話雙頁排版修正：僅覆蓋手機尺寸，不更動桌機版 -->
+<style id="secret-spread-mobile-final-fix">
+@media (max-width: 640px) {
+
+  /* 左頁標題：取消桌機位移，保持置中 */
+  #secretCinematicStage .secret-note-topline {
+    left: 0 !important;
+    width: 100% !important;
+    transform: none !important;
+    margin-bottom: 16px !important;
+    justify-content: center !important;
+  }
+
+  /* 左頁正文：取消桌機左上位移，保留適當內距 */
+  #secretCinematicStage .secret-note-page .letter-body {
+    transform: none !important;
+    width: 100% !important;
+    padding: 0 8px 6px !important;
+    box-sizing: border-box !important;
+    font-size: clamp(10px, 2.8vw, 13px) !important;
+    line-height: 1.9 !important;
+    letter-spacing: 0.15px !important;
+    text-align: left !important;
+  }
+
+  /* 左頁頁尾：取消桌機水平位移並置中 */
+  #secretCinematicStage .secret-note-footer {
+    left: 0 !important;
+    width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    transform: none !important;
+  }
+
+  /* 右頁：內容置中，避免照片或說明超出頁面 */
+  #secretCinematicStage .secret-memory-page {
+    padding: 12px 10px !important;
+    overflow: hidden !important;
+    justify-content: center !important;
+  }
+
+  /* 照片框：取消桌機偏移，手機使用直式比例 */
+  #secretCinematicStage .secret-memory-frame {
+    position: relative !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    aspect-ratio: 3 / 4 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 照片說明：放回照片下方，不使用桌機的絕對定位 */
+  #secretCinematicStage .secret-memory-caption {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 12px 0 0 !important;
+    transform: none !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    font-size: 6px !important;
+    line-height: 1.3 !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* 若有裝飾符號，維持在說明文字下方 */
+  #secretCinematicStage .secret-memory-mark {
+    position: relative !important;
+    left: auto !important;
+    bottom: auto !important;
+    margin: 7px 0 0 !important;
+    transform: none !important;
+    font-size: 10px !important;
+  }
+}
+</style>
+
+<!-- 手機版自適應排版：以 Grid 容器配置取代固定左右位移；桌機與原有動畫不變 -->
+<style id="secret-spread-responsive-mobile">
+@media (max-width: 640px) {
+  /* 左右頁依可用寬度平均分配，不使用固定像素推移 */
+  #secretCinematicStage .cinema-book-mirror .cinema-secret-spread .letter-inner.secret-spread-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    column-gap: clamp(4px, 1.2vw, 9px) !important;
+    padding: clamp(7px, 2vw, 12px) clamp(5px, 1.5vw, 10px) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 左頁：所有內容留在左頁自己的格子內 */
+  #secretCinematicStage .secret-note-page {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: clamp(8px, 2.2vw, 13px) clamp(5px, 1.5vw, 9px) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  #secretCinematicStage .secret-note-topline {
+    position: relative !important;
+    left: auto !important;
+    width: 100% !important;
+    margin: 0 0 clamp(9px, 2.4vw, 15px) !important;
+    padding: 0 !important;
+    transform: none !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: clamp(6px, 1.65vw, 8px) !important;
+    letter-spacing: clamp(.7px, .35vw, 1.5px) !important;
+  }
+  #secretCinematicStage .secret-note-page .letter-body {
+    position: relative !important;
+    left: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 clamp(2px, .7vw, 5px) 5px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+    font-size: clamp(8px, 2.45vw, 11px) !important;
+    line-height: 1.8 !important;
+    letter-spacing: .05px !important;
+    overflow-wrap: anywhere !important;
+    text-align: left !important;
+  }
+  #secretCinematicStage .secret-note-footer {
+    position: relative !important;
+    left: auto !important;
+    width: min(100%, 190px) !important;
+    margin: clamp(7px, 1.8vw, 11px) auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    justify-content: center !important;
+    gap: clamp(3px, .8vw, 6px) !important;
+    font-size: clamp(4.5px, 1.35vw, 6px) !important;
+    letter-spacing: clamp(.4px, .25vw, 1px) !important;
+  }
+
+  /* 右頁：照片寬度由右頁格子決定，水平置中 */
+  #secretCinematicStage .secret-memory-page {
+    position: relative !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: clamp(8px, 2vw, 13px) clamp(5px, 1.5vw, 9px) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  #secretCinematicStage .secret-memory-frame {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    aspect-ratio: 3 / 4 !important;
+    padding: clamp(3px, .9vw, 5px) !important;
+    box-sizing: border-box !important;
+    transform: rotate(.35deg) !important;
+  }
+  #secretCinematicStage .secret-memory-caption {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: clamp(7px, 1.8vw, 11px) 0 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    font-size: clamp(5px, 1.45vw, 7px) !important;
+    line-height: 1.3 !important;
+    letter-spacing: clamp(.5px, .25vw, 1px) !important;
+  }
+  #secretCinematicStage .secret-memory-mark {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: clamp(5px, 1.4vw, 8px) 0 0 !important;
+    transform: none !important;
+  }
+}
+</style>
+
+
+<!-- 手機版左右頁視覺置中修正：預留中間書脊空間，讓兩頁內容各自對準可視頁面中心 -->
+<style id="secret-spread-mobile-optical-centering">
+@media (max-width: 640px) {
+  #secretCinematicStage .cinema-book-mirror .cinema-secret-spread .letter-inner.secret-spread-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    column-gap: 0 !important;
+  }
+
+  /* 左頁：右側多留書脊空間，標題與頁尾便會落在左頁視覺中心 */
+  #secretCinematicStage .secret-note-page {
+    padding-left: clamp(5px, 1.5vw, 9px) !important;
+    padding-right: clamp(20px, 4vw, 30px) !important;
+    align-items: stretch !important;
+  }
+  #secretCinematicStage .secret-note-topline,
+  #secretCinematicStage .secret-note-footer {
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  /* 信件正文維持閱讀習慣的靠左，不強迫每行置中 */
+  #secretCinematicStage .secret-note-page .letter-body {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  /* 右頁：左側多留書脊空間，照片與照片說明一起對準右頁可視中心 */
+  #secretCinematicStage .secret-memory-page {
+    padding-left: clamp(20px, 4vw, 30px) !important;
+    padding-right: clamp(5px, 1.5vw, 9px) !important;
+    align-items: center !important;
+  }
+  #secretCinematicStage .secret-memory-frame,
+  #secretCinematicStage .secret-memory-caption,
+  #secretCinematicStage .secret-memory-mark {
+    align-self: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  #secretCinematicStage .secret-memory-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    left: auto !important;
+    right: auto !important;
+  }
+  #secretCinematicStage .secret-memory-caption {
+    text-align: center !important;
+  }
+}
+</style>
+
+
+<!-- 桌機版悄悄話排版修正：只在桌機尺寸生效，避免影響手機版自適應 -->
+<style id="secret-spread-desktop-layout-final-fix">
+@media (min-width: 641px) {
+  #secretCinematicStage .secret-note-page {
+    min-width: 0 !important;
+    padding: clamp(18px, 3.2%, 34px) clamp(16px, 3.2%, 34px) !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+  #secretCinematicStage .secret-note-topline {
+    position: relative !important; left: auto !important; width: 100% !important;
+    margin: 0 auto clamp(14px, 2.2vw, 26px) !important;
+    transform: none !important; justify-content: center !important; text-align: center !important;
+    font-size: clamp(8px, .95vw, 12px) !important;
+    letter-spacing: clamp(1.5px, .28vw, 3.5px) !important;
+  }
+  /* 正文隨左頁寬度縮放；JS 再依可用高度縮小字級 */
+  #secretCinematicStage .secret-note-page .letter-body {
+    position: relative !important; left: auto !important;
+    width: 100% !important; max-width: 100% !important; min-width: 0 !important;
+    flex: 1 1 auto !important; min-height: 0 !important;
+    margin: 0 !important; padding: 0 2% 10px !important;
+    transform: none !important; box-sizing: border-box !important;
+    columns: 1 !important; column-count: 1 !important; column-gap: 0 !important;
+    font-size: clamp(10px, 1.15vw, 16px) !important;
+    line-height: 1.8 !important;
+    letter-spacing: clamp(.05px, .035vw, .35px) !important;
+    white-space: pre-wrap !important; overflow-wrap: anywhere !important;
+    word-break: normal !important; overflow-x: hidden !important;
+    overflow-y: auto !important; scrollbar-width: none !important;
+    text-align: left !important;
+  }
+  #secretCinematicStage .secret-note-page .letter-body::-webkit-scrollbar { display: none !important; }
+  #secretCinematicStage .secret-note-footer {
+    position: relative !important; left: auto !important;
+    width: min(100%, 340px) !important; max-width: 100% !important;
+    margin: auto auto 0 !important; transform: none !important;
+    justify-content: center !important; box-sizing: border-box !important;
+    font-size: clamp(7px, .78vw, 10px) !important;
+    letter-spacing: clamp(1px, .22vw, 2.5px) !important;
+  }
+  #secretCinematicStage .secret-memory-page {
+    position: relative !important; left: auto !important; min-width: 0 !important;
+    padding: clamp(16px, 3.2%, 34px) clamp(12px, 3%, 30px) !important;
+    display: flex !important; flex-direction: column !important;
+    align-items: center !important; justify-content: center !important;
+    overflow: hidden !important; box-sizing: border-box !important;
+  }
+  #secretCinematicStage .secret-memory-frame {
+    position: relative !important;
+    left: 0 !important;
+    right: auto !important;
+    width: min(100%, clamp(180px, 24vw, 320px)) !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    aspect-ratio: 3 / 4 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+  }
+  /* 桌機右頁比照手機版：照片說明放在照片下方 */
+  #secretCinematicStage .secret-memory-caption {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 12px auto 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    font-size: clamp(7px, .82vw, 10px) !important;
+    line-height: 1.5 !important;
+    letter-spacing: clamp(1px, .2vw, 2.5px) !important;
+  }
+  #secretCinematicStage .secret-memory-mark {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    margin: 7px auto 0 !important;
+    transform: none !important;
+  }
+}
+</style>
