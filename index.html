@@ -857,6 +857,9 @@
     }
 
     .envelope-skip-btn {
+      /* 保留原本按鈕位置與點擊範圍，但完全隱藏視覺外觀 */
+      opacity: 0 !important;
+      pointer-events: auto;
       padding: 7px 16px;
       background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(10px);
@@ -873,6 +876,7 @@
       transition: all 0.3s ease;
     }
     .envelope-skip-btn:hover {
+      opacity: 0 !important;
       background: linear-gradient(135deg, #c29f5d 0%, #99783f 100%);
       color: #ffffff;
       border-color: #8c6820;
@@ -4436,8 +4440,8 @@
   </div>
 
   <script>
-    // GitHub Pages 靜態版：不使用 Google Apps Script 模板語法。
-    // 賓客姓名與悄悄話統一由專屬網址參數帶入。
+    // GitHub Pages 靜態版：改由網址參數讀取賓客姓名與悄悄話。
+    // 支援 ?to= / ?name= 與 ?secret_note= / ?groom_note= / ?bride_note=。
     const rawGuestName = '';
     const rawSecretNote = '';
 
